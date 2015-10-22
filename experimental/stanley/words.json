@@ -1,0 +1,13 @@
+[
+  {
+
+    "word" :"great",
+    "weight": 5
+  },
+  {
+
+    "word" :"bad",
+    "weight": -4
+  }
+
+]
