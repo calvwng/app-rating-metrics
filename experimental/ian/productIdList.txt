@@ -1,0 +1,4 @@
+INSERT PRODUCT IDS HERE
+
+google play:
+    textra - 14831371782

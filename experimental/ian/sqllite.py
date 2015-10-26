@@ -6,22 +6,25 @@ __author__ = 'Ian'
 conn = sqlite3.connect(':memory:')
 c = conn.cursor()
 
-
 creation_sql = ['''CREATE TABLE IF NOT EXISTS APP (id INTEGER PRIMARY KEY AUTOINCREMENT, name text, developer text,
         release_date DATE, added_date DATE, updated_date DATE, version text)''',
-  '''CREATE TABLE IF NOT EXISTS REVIEW (id INTEGER PRIMARY KEY AUTOINCREMENT, date date, user text,rating DECIMAL )''',
   ''' CREATE TABLE IF NOT EXISTS KEYWORD (id INTEGER PRIMARY KEY AUTOINCREMENT, word text, weight DECIMAL) '''
 
 ]
 # Create table
 
 map(c.execute, creation_sql)
+
 #creates tables needing FKs
+c.execute( '''CREATE TABLE IF NOT EXISTS REVIEW (id text PRIMARY KEY, product_id INTEGER date date, author text,stars DECIMAL, version DECIMAL,
+                FOREIGN KEY (product_id) REFERENCES  APP(ID))'''
+           )
 c.execute('''CREATE TABLE IF NOT EXISTS REVIEWXKEYWORD
           (REVIEW_ID INTEGER,
           KEYWORD_ID,
-          FOREIGN KEY(REVIEW_ID) REFERENCES APP(ID),
+          FOREIGN KEY(REVIEW_ID) REFERENCES REVIEW(ID),
           FOREIGN KEY(KEYWORD_ID) REFERENCES KEYWORD(ID))''')
+
 
 
 
@@ -36,11 +39,22 @@ with open('query.json') as data_file:
 
 print "Adding words:"
 
+conn.commit()
+
+
 with open('words.json') as word_file:
     for line in json.load(word_file):
         print "\t" + line['word']
         c.execute("INSERT INTO KEYWORD(word, weight) VALUES (?,?)",
                   (line['word'], line['weight']))
+
+print "Adding reviews:"
+columns = get_column_names(c, "review")
+with open ('allTextraReviews.json') as word_file:
+    for line in json.load(word_file):
+        print "\t" + line['id']
+    c.execute("INSERT INTO KEYWORD(id, product, author, stars, version) VALUES (?,?,?,?,?)",
+              (line['id'], line['product'], line['author'], line['stars'], line['version']))
 conn.commit()
 
 # Gets column names
