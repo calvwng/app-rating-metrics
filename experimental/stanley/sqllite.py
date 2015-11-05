@@ -3,6 +3,20 @@ import json
 
 __author__ = 'Ian'
 
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+def sentiment_score(s, cursor):
+    score = 0
+    for word in s.split():
+        for word_score in cursor.execute("SELECT weight FROM KEYWORD WHERE word='{0}'".format(word.lower().replace("'", "''"))):
+            score += word_score[0]
+    return score
+
 conn = sqlite3.connect(':memory:')
 c = conn.cursor()
 
@@ -41,12 +55,13 @@ print "Adding words:"
 
 conn.commit()
 
-
-with open('words.json') as word_file:
-    for line in json.load(word_file):
-        print "\t" + line['word']
-        c.execute("INSERT INTO KEYWORD(word, weight) VALUES (?,?)",
-                  (line['word'], line['weight']))
+with open('vader_sentiment_lexicon.txt') as word_file:
+    for line in word_file:
+        word_weight = line.split()
+        if is_number(word_weight[1]):
+            print word_weight[0]
+            c.execute("INSERT INTO KEYWORD(word, weight) VALUES (?,?)", 
+                     (word_weight[0].decode('utf8'), float(word_weight[1])))
 
 print "Adding reviews:"
 columns = get_column_names(c, "review")
@@ -70,17 +85,11 @@ for col_name in get_column_names(c, "review"):
 for row in c.execute("SELECT COUNT(*) FROM REVIEW WHERE stars=5"):
     print "number of 5 star reviews: " + str(row[0])
 
-for row in c.execute("SELECT original_review FROM REVIEW LIMIT 1"):
+# gets a review and assigns score based on KEYWORD table
+for row in c.execute("SELECT original_review FROM REVIEW ORDER BY RANDOM() LIMIT 1"):
     print "this is a review: " + row[0]
-
-# assigns score to a string from KEYWORD table
-fake_review = "not great great but not bad"
-review_score = 0
-for word in fake_review.split(" "):
-    for word_val in c.execute("SELECT weight FROM KEYWORD WHERE word='{0}'".format(word)):
-        review_score += word_val[0]
-
-print "this is a review score calculated from the KEYWORD table: " + str(review_score)
+    print "this is the review's score: " + str(sentiment_score(row[0], c))
+    
 
 # Insert a row of data
 #c.execute("INSERT INTO app VALUES (1,'2006-01-05','BUY')")
