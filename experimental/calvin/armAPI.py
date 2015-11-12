@@ -2,6 +2,8 @@ from flask import Flask, g, request
 from flask_restful import Resource, Api
 
 import sqlite3
+import json
+import collections
 
 DATABASE = 'reviews.db'
 
@@ -32,8 +34,17 @@ class AppRatings(Resource):
         c = db_conn.cursor()
         c.execute("SELECT DISTINCT product FROM REVIEW")
         result = c.fetchall()
+
+        # Convert to objects with key-value pairs
+        objs = []
+
+        for row in result:
+            obj = collections.OrderedDict()
+            obj['product'] = row[0]
+            objs.append(obj)
+
         db_conn.close()
-        return result
+        return obj
 
 # Resource containg app rating data for given app id
 class AppRating(Resource):
@@ -63,11 +74,27 @@ class AppRating(Resource):
            subst_tuple = subst_tuple + (max_rating,)
 
         db_conn = get_db()
+        # db_conn.row_factory = sqlite3.Row
         c = db_conn.cursor()
         c.execute(qryStr, subst_tuple)
         result = c.fetchall()
+
+        # Convert to objects with key-value pairs
+        objs = []
+
+        for row in result:
+            obj = collections.OrderedDict()
+            obj['id'] = row[0]
+            obj['product'] = row[1]
+            obj['original_review'] = row[2]
+            obj['date'] = row[3]
+            obj['author'] = row[4]
+            obj['stars'] = row[5]
+            obj['version'] = row[6]
+            objs.append(obj)
+
         db_conn.close()
-        return result
+        return objs
 
 # The Werkzeug routing system automatically orders routes by complexity
 api.add_resource(AppRatings, '/apps')
