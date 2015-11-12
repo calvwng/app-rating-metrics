@@ -18,14 +18,21 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
-#import sqllite
-
 """
 'A Python web app based on WSGI must have one central object implementing the app.
 'With Flask Restful, this is an instance of the Flask class.
 """
 app = Flask(__name__) # __name__ is the package name
 api = Api(app)
+
+# After each request (options) received, send back a response allowing cross origin
+# This allows querying our API from any origin
+@app.after_request
+def after_request(response):
+  response.headers.add('Access-Control-Allow-Origin', '*')
+  response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+  response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+  return response
 
 # Resource containing all app data
 class AppRatings(Resource):
