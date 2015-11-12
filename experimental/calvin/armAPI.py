@@ -1,4 +1,4 @@
-from flask import Flask, g
+from flask import Flask, g, request
 from flask_restful import Resource, Api
 
 import sqlite3
@@ -38,10 +38,33 @@ class AppRatings(Resource):
 # Resource containg app rating data for given app id
 class AppRating(Resource):
     def get(self, app_id):
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        min_rating = request.args.get('min_rating')
+        max_rating = request.args.get('max_rating')
+
+        qryStr = "SELECT * FROM REVIEW WHERE product=? "
+        subst_tuple = (app_id,)
+
+        if (start_date):
+           qryStr = qryStr + "AND date >= date(?) "
+           subst_tuple = subst_tuple + (start_date,)
+
+        if (end_date):
+           qryStr = qryStr + "AND date <= date(?)"
+           subst_tuple = subst_tuple + (end_date,)
+
+        if (min_rating):
+           qryStr = qryStr + "AND stars >= ? "
+           subst_tuple = subst_tuple + (min_rating,)
+
+        if (max_rating):
+           qryStr = qryStr + "AND stars <= ? "
+           subst_tuple = subst_tuple + (max_rating,)
+
         db_conn = get_db()
         c = db_conn.cursor()
-        subst_tuple = (app_id,)
-        c.execute("SELECT * FROM REVIEW WHERE product=?", subst_tuple)
+        c.execute(qryStr, subst_tuple)
         result = c.fetchall()
         db_conn.close()
         return result
