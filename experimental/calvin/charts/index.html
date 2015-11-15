@@ -1,0 +1,51 @@
+<html>
+   <head>
+      <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Metric-based App Rating System</title>
+
+      <script src="js/jquery-2.1.4.js"></script>
+      <script src="js/bootstrap.js"></script>
+      <link href="css/bootstrap.css" rel="stylesheet">
+      <link href="css/arm.css" rel="stylesheet" type="text/css"></link>
+   </head>
+
+   <body>
+      <div id="container">
+         <h1>Metric-Based App Rating System Prototype</h1>
+
+         <span>
+            <b>App to analyze: </b>
+            <select>
+               <option value="14831371782">Textra (product: 14831371782)</option>
+            </select>
+         </span></br>
+
+         <span>
+            <b>Metric to use: </b>
+            <select>
+               <option value="sentiment">Level of Sentiment</option>
+               <option value="verbosity">Verbosity</option>
+               <option value="none">None</option>
+            </select>
+         </span></br>
+
+         <span>
+            <b>Start date: </b>
+            <input id="start_date" type="text" name="start_date" placeholder="YYYY-MM-DD" value="2015-10-02"></input>
+            <b>End date: </b>
+            <input id="end_date" type="text" name="end_date" placeholder="YYYY-MM-DD" value="2015-10-22"></input>
+            <button id="submitBtn" class="btn">Submit</button>
+         </span>
+
+         <div id="chartContainer">
+            <canvas id="myChart" width="400" height="400"></canvas>
+            <div id="legend"></div>
+
+            <script src="js/Chart.js"></script>
+            <script src="js/arm.js"></script>
+         </div>
+      </div>
+   </body>
+
+</html>

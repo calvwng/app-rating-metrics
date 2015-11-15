@@ -3,6 +3,8 @@ import json
 
 __author__ = 'Ian'
 
+
+
 def is_number(s):
     try:
         float(s)
@@ -10,11 +12,29 @@ def is_number(s):
     except ValueError:
         return False
 
-def sentiment_score(s, cursor):
+def is_negation(possible_negations, negation_list):
+    full_string = " ".join(possible_negations)
+    if any(str in full_string for str in negation_list):
+        print "negation here: " + full_string
+        return -1
+    return 1
+
+def sentiment_score(s, negation_words, conn_cursor):
     score = 0
+    count = 0
+    possible_negations = []
     for word in s.split():
-        for word_score in cursor.execute("SELECT weight FROM KEYWORD WHERE word='{0}'".format(word.lower().replace("'", "''"))):
-            score += word_score[0]
+	possible_negations.append(word)
+        count += 1
+        if count > 3:
+           possible_negations.pop(0)
+        multiplier = 1
+        temp_score = 0
+        for word_score in conn_cursor.execute("SELECT weight FROM KEYWORD WHERE word='{0}'".format(word.lower().replace("'", "''"))):
+            temp_score = word_score[0]
+            print "this is the word: " + word
+        if temp_score != 0:
+            score += temp_score * is_negation(possible_negations, negation_words)
     return score
 
 conn = sqlite3.connect(':memory:')
@@ -40,8 +60,6 @@ c.execute('''CREATE TABLE IF NOT EXISTS REVIEWXKEYWORD
           FOREIGN KEY(KEYWORD_ID) REFERENCES KEYWORD(ID))''')
 
 
-
-
 def get_column_names (cursor, table_name):
     c2 = cursor.execute("select * from " + table_name)
     return [d[0] for d in c2.description]
@@ -59,7 +77,6 @@ with open('vader_sentiment_lexicon.txt') as word_file:
     for line in word_file:
         word_weight = line.split()
         if is_number(word_weight[1]):
-            print word_weight[0]
             c.execute("INSERT INTO KEYWORD(word, weight) VALUES (?,?)", 
                      (word_weight[0].decode('utf8'), float(word_weight[1])))
 
@@ -67,37 +84,14 @@ print "Adding reviews:"
 columns = get_column_names(c, "review")
 with open ('allTextraReviews.json') as word_file:
     for line in json.load(word_file):
-        print "\t" + line['id']
         c.execute("INSERT INTO REVIEW(id, product, original_review, date, author, stars, version) VALUES (?,?,?,?,?,?,?)", (line['id'], line['product'], line['original_review'], line['date'], line['author'], line['stars'], line['version']))
 conn.commit()
 
-# Gets column names
-#c = c.execute("select * from app")
-#names = [d[0] for d in c.description]
-#for x in data:
-#  for col in names:
-#    print x[col]
-
-# gets column names of review table
-for col_name in get_column_names(c, "review"):
-    print col_name
-
-for row in c.execute("SELECT COUNT(*) FROM REVIEW WHERE stars=5"):
-    print "number of 5 star reviews: " + str(row[0])
-
 # gets a review and assigns score based on KEYWORD table
+negation_words = open('negationWords.txt').read().splitlines()
 for row in c.execute("SELECT original_review FROM REVIEW ORDER BY RANDOM() LIMIT 1"):
     print "this is a review: " + row[0]
-    print "this is the review's score: " + str(sentiment_score(row[0], c))
-    
-
-# Insert a row of data
-#c.execute("INSERT INTO app VALUES (1,'2006-01-05','BUY')")
-
-#print [str(v) +"_extra" for v in c.execute("select *from app").fetchmany(100)]
-# Save (commit) the changes
-
-
+    print "this is the review's score: " + str(sentiment_score(row[0], negation_words, c))
 
 # We can also close the connection if we are done with it.
 # Just be sure any changes have been committed or they will be lost.
