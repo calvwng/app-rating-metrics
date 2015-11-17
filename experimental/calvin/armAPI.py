@@ -2,8 +2,8 @@ from flask import Flask, g, request
 from flask_restful import Resource, Api
 
 import sqlite3
-import json
 import collections
+import verbosity_agent
 
 DATABASE = 'reviews.db'
 
@@ -34,6 +34,22 @@ def after_request(response):
   response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
   return response
 
+# Convert a list of arrays to a list of app review dictionaries/objects
+def arrsToObjs(arrs):
+    objs = []
+
+    for arr in arrs:
+        obj = collections.OrderedDict()
+        obj['id'] = arr[0]
+        obj['product'] = arr[1]
+        obj['original_review'] = arr[2]
+        obj['date'] = arr[3]
+        obj['author'] = arr[4]
+        obj['stars'] = arr[5]
+        obj['version'] = arr[6]
+        objs.append(obj)
+    return objs
+
 # Resource containing all app data
 class AppRatings(Resource):
     def get(self):
@@ -60,10 +76,21 @@ class AppRating(Resource):
         end_date = request.args.get('end_date')
         min_rating = request.args.get('min_rating')
         max_rating = request.args.get('max_rating')
-        verbosity = request.arg.get('verbosity')
+        verbosity = request.args.get('verbosity')
 
         qryStr = "SELECT * FROM REVIEW WHERE product=? "
         subst_tuple = (app_id,)
+        db_conn = get_db()
+        c = db_conn.cursor()
+
+        # Before anything else, must process ALL available reviews to derive verbosity scale
+        if (verbosity):
+            c.execute(qryStr, subst_tuple)
+            objs = arrsToObjs(c.fetchall())
+            # build histogram of ALL review word counts, regardless of other filtering parameters
+            verbosity_agent.createHistogram(objs)
+            # use built histogram to create verbosity scoring scale (ranges)
+            verbosity_agent.createVerbosityScale()
 
         if (start_date):
            qryStr = qryStr + "AND date >= date(?) "
@@ -81,30 +108,16 @@ class AppRating(Resource):
            qryStr = qryStr + "AND stars <= ? "
            subst_tuple = subst_tuple + (max_rating,)
 
-        db_conn = get_db()
-        # db_conn.row_factory = sqlite3.Row
-        c = db_conn.cursor()
         c.execute(qryStr, subst_tuple)
         result = c.fetchall()
 
-        # Convert to objects with key-value pairs
-        objs = []
+        # Convert to dictionaries/objects with key-value pairs
+        objs = arrsToObjs(result)
 
-        for row in result:
-            obj = collections.OrderedDict()
-            obj['id'] = row[0]
-            obj['product'] = row[1]
-            obj['original_review'] = row[2]
-            obj['date'] = row[3]
-            obj['author'] = row[4]
-            obj['stars'] = row[5]
-            obj['version'] = row[6]
-            objs.append(obj)
-
+        # Now that results are filtered by other parameters, we can assign verbosity scores to results
         if (verbosity):
-            # TODO: use verbosity agent to process all reviews to build histogram of review word counts
-            # TODO: use built histogram to assign verbosity scores to all reviews in result
-            pass
+            verbosity_agent.assignVerbosityScores(objs)
+            objs = [obj for obj in objs if obj['verbosity'] == int(verbosity)] # filter objs to match parameter
 
         db_conn.close()
         return objs

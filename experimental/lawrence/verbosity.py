@@ -1,6 +1,6 @@
 import re
 # temp array of arrays of one string
-reviewlst = [['This is a great game'],['good'],['bad'],['Why is this such a shitty game'],['five out of five']]
+reviewlst = [['This is a great game'],['good'],['bad'],['Why is this such a terrible game'],['five out of five']]
 
 #global variables
 histogramlst = {}
