@@ -7,37 +7,38 @@ histogramlst = {}
 verbosityscoreslst = {}
 max = 0
 
-   
+
 def createHistogram(reviewlst):
    global max
    for i in range(1,11):
       histogramlst[i] = 0
-   
+
    for i in range(len(reviewlst)):
       for j in reviewlst[i]:
          #assigns only an array of words with special characters
-         temp = len(re.split(r'[^0-9A-Za-z]+',j))
-      
-         if temp > max:
-            max = temp
-      
-         if temp not in histogramlst:
-            histogramlst[temp] = 1
+         numWords = len(re.split(r'[^0-9A-Za-z]+',j))
+
+         if numWords > max:
+            max = numWords
+
+         if numWords not in histogramlst:
+            histogramlst[numWords] = 1
          else:
-            histogramlst[temp] += 1
-   
-      
+            histogramlst[numWords] += 1
+
+
 def findverbosityscores():
    global max
    for i in range(10):
       lowerlimit = max * i/10.0
       upperlimit = max *(i+1)/10.0
-      print lowerlimit,upperlimit
-      for temp in histogramlst:
-         if float(temp) == 0:
+      print 'Range', lowerlimit, 'to', upperlimit, 'yields verbosity score', i
+      for numWords in histogramlst:
+         if float(numWords) == 0:
             print 0
-         elif float(temp) > lowerlimit and float(temp) <= upperlimit:
-            print temp,"is between ",lowerlimit,'and',upperlimit,'for',histogramlst[temp],'amount of times and the verbosity score is',i
+         elif float(numWords) > lowerlimit and float(numWords) <= upperlimit:
+            print '# of', numWords, 'worded reviews:', histogramlst[numWords], 'reviews'
+      print
 
 
 

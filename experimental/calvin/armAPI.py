@@ -53,13 +53,14 @@ class AppRatings(Resource):
         db_conn.close()
         return obj
 
-# Resource containg app rating data for given app id
+# Resource containing app rating data for given app id
 class AppRating(Resource):
     def get(self, app_id):
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
         min_rating = request.args.get('min_rating')
         max_rating = request.args.get('max_rating')
+        verbosity = request.arg.get('verbosity')
 
         qryStr = "SELECT * FROM REVIEW WHERE product=? "
         subst_tuple = (app_id,)
@@ -99,6 +100,11 @@ class AppRating(Resource):
             obj['stars'] = row[5]
             obj['version'] = row[6]
             objs.append(obj)
+
+        if (verbosity):
+            # TODO: use verbosity agent to process all reviews to build histogram of review word counts
+            # TODO: use built histogram to assign verbosity scores to all reviews in result
+            pass
 
         db_conn.close()
         return objs
