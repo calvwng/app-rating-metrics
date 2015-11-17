@@ -1,10 +1,4 @@
 import re
-# temp array of arrays of one string
-reviewlst = [{'original_review': 'This is a great game'},
-             {'original_review': 'good'},
-             {'original_review': 'bad'},
-             {'original_review': 'Why is this such a terrible game'},
-             {'original_review': 'five out of five'}]
 
 #global variables
 histogramlst = {}
@@ -12,6 +6,11 @@ verbosityscoreslst = {}
 max = 0
 # maxReview = None
 
+def reset():
+    global histogramlst, verbosityscoreslst, max
+    histogramlst = {}
+    verbosityscoreslst = {}
+    max = 0
 
 def createHistogram(reviewlst):
    global max
@@ -57,6 +56,13 @@ def assignVerbosityScores(objList):
                obj['verbosity_word_count'] = wordCount
                break
 
+# SMOKETEST:
+# # temp array of arrays of one string
+# reviewlst = [{'original_review': 'This is a great game'},
+#              {'original_review': 'good'},
+#              {'original_review': 'bad'},
+#              {'original_review': 'Why is this such a terrible game'},
+#              {'original_review': 'five out of five'}]
 # createHistogram(reviewlst)
 # createVerbosityScale()
 # assignVerbosityScores(reviewlst)
