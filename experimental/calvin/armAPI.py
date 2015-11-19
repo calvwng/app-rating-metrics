@@ -63,12 +63,17 @@ class AppRatings(Resource):
         c.execute("SELECT DISTINCT product FROM REVIEW")
         db_results = c.fetchall()
 
+
+
         # Convert to objects with key-value pairs and return in results list
         results = []
 
         for row in db_results:
             obj = collections.OrderedDict()
             obj['product'] = row[0]
+            # c.execute("SELECT name FROM APP WHERE id=?", (row[0],))
+            # prod_name = c.fetchall()
+            # obj['product_name'] = prod_name
             obj['product_name'] = PID_TO_NAME[str(row[0])]
             results.append(obj)
 
