@@ -2,9 +2,10 @@ document.getElementById("myChart").style.width = "640";
 document.getElementById("myChart").style.height = "480";
 
 function queryAPI() {
+
    var url = 'http://localhost:5000/apps/14831371782';
    var params = {};
-
+   var metric = $("#metric").prop('value');
    var start_date = $("#start_date").prop('value');
    var end_date = $("#end_date").prop('value');
 
@@ -15,6 +16,7 @@ function queryAPI() {
    if (end_date != "") {
       params["end_date"] = end_date;
    }
+   params["metric"] = metric;
 
    var numParams = Object.keys(params).length;
    if (numParams > 1) {
@@ -30,18 +32,19 @@ function queryAPI() {
    }
 
    // Query our API for
-   $.get(url, function(data) {
+   $.get(url, function(return_data) {
       var ratings = [];
+      var metric = $("#metric").prop('value');
 
-      for (obj of data) {
-         ratings.push(obj.stars);
+      for (var obj in return_data) {
+        ratings.push(obj.stars);
       }
+
 
       ratings = ratings.reverse(); // I think the results are returned newest to oldest
 
       // Get the context of the canvas element we want to select
       var ctx = document.getElementById("myChart").getContext("2d");
-
       var data = {
           labels: ["Oct 02", "Oct 04", "Oct 06", "Oct 08", "Oct 10", "Oct 12",
                    "Oct 14", "Oct 16", "Oct 18", "Oct 20", "Oct 22"],
@@ -118,9 +121,13 @@ function queryAPI() {
 
       };
 
-      var myLineChart = new Chart(ctx).Line(data, options);
+      if(metric == 'wordcloud') {
+         WordCloud(document.getElementById('myChart'), { list: return_data.word_count, fontFamily: 'Times, serif'} );
+      } else {
+         var myLineChart = new Chart(ctx).Line(data, options);
+         document.getElementById("legend").innerHTML = myLineChart.generateLegend();
+      }
 
-      document.getElementById("legend").innerHTML = myLineChart.generateLegend();
    });
 }
 

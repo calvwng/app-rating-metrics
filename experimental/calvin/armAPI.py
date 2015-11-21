@@ -81,6 +81,17 @@ class AppRatings(Resource):
         return results
 
 # Resource containing app rating data for given app id
+def get_words(reviews):
+    all_words = []
+
+    for result in reviews:
+        all_words = all_words + result['original_review'].split()
+        #set limit at 10,000 words for performance reasons
+        if len(all_words) > 10000:
+            return all_words
+    return all_words;
+
+
 class AppRating(Resource):
     def get(self, app_id):
         start_date = request.args.get('start_date')
@@ -88,6 +99,7 @@ class AppRating(Resource):
         min_rating = request.args.get('min_rating')
         max_rating = request.args.get('max_rating')
         verbosity = request.args.get('verbosity')
+        metric = request.args.get('metric')
 
         qryStr = "SELECT * FROM REVIEW WHERE product=? "
         subst_tuple = (app_id,)
@@ -126,7 +138,7 @@ class AppRating(Resource):
         results = {'reviews': arrsToObjs(db_results)}
 
         # Now that results are filtered by other parameters, we can assign verbosity scores to results
-        if (verbosity):
+        if verbosity:
             overall_verbosity_hist = copy.deepcopy(verbosity_agent.histogramlst) # Save deep copy of overall word count histogram
             verbosity_scale = copy.deepcopy(verbosity_agent.verbosityscoreslst)  # Save deep copy of overall verbosity scale
             verbosity_agent.assignVerbosityScores(results['reviews'])            # Assign the verbosity scores to results
@@ -142,6 +154,15 @@ class AppRating(Resource):
             results['verbosity_hist'] = overall_verbosity_hist              # Include overall word count histogram
             results['verbosity_filtered_hist'] = filtered_verbosity_hist    # Include word count histogram for filtered results
             results['reviews'] = verbosObjs                                 # Include app review objects with verbosity scores
+        elif metric == 'wordcloud':
+            all_words = get_words(results['reviews'])
+            all_words = all_words
+            uniq_words = set(all_words)
+            word_count = []
+
+            for word in uniq_words:
+                word_count.append([word, all_words.count(word)])
+            results['word_count'] = word_count
 
         results['product_name'] = PID_TO_NAME[app_id]                       # Always include the product name
 
