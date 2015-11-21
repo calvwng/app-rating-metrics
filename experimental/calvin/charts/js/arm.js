@@ -35,8 +35,7 @@ function queryAPI() {
    $.get(url, function(return_data) {
       var ratings = [];
       var metric = $("#metric").prop('value');
-
-      for (var obj in return_data) {
+      for (obj of return_data) {
         ratings.push(obj.stars);
       }
 
