@@ -6,7 +6,7 @@ __author__ = 'Ian'
 conn = sqlite3.connect(':memory:')
 c = conn.cursor()
 
-creation_sql = ['''CREATE TABLE IF NOT EXISTS APP (id INTEGER PRIMARY KEY AUTOINCREMENT, name text, developer text,
+creation_sql = ['''CREATE TABLE IF NOT EXISTS APP (id INTEGER PRIMARY KEY, name text, developer text,
         release_date DATE, added_date DATE, updated_date DATE, version text)''',
   ''' CREATE TABLE IF NOT EXISTS KEYWORD (id INTEGER PRIMARY KEY AUTOINCREMENT, word text, weight DECIMAL) '''
 
@@ -41,7 +41,10 @@ print "Adding words:"
 
 conn.commit()
 
+appId = '14831371782'
+app = 'Textra SMS'
 
+c.execute("INSERT INTO APP(id, name) VALUES(?,?)",(appId, app))
 with open('words.json') as word_file:
     for line in json.load(word_file):
         print "\t" + line['word']
@@ -53,7 +56,7 @@ columns = get_column_names(c, "review")
 with open ('allTextraReviews.json') as word_file:
     for line in json.load(word_file):
         print "\t" + line['id']
-    c.execute("INSERT INTO KEYWORD(id, product, author, stars, version) VALUES (?,?,?,?,?)",
+    c.execute("INSERT INTO REVIEW(id, product, author, stars, version) VALUES (?,?,?,?,?)",
               (line['id'], line['product'], line['author'], line['stars'], line['version']))
 conn.commit()
 

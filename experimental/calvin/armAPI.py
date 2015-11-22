@@ -12,11 +12,13 @@ PID_TO_NAME = {
     "14831371782": "Textra SMS"
 }
 
+
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
     return db
+
 
 def close_connection(exception):
     db = getattr(g, '_database', None)
@@ -30,17 +32,19 @@ def close_connection(exception):
 app = Flask(__name__) # __name__ is the package name
 api = Api(app)
 
+
 # After each request (options) received, send back a response allowing cross origin
 # This allows querying our API from any origin
 @app.after_request
 def after_request(response):
-  response.headers.add('Access-Control-Allow-Origin', '*')
-  response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-  response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
-  return response
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+    return response
+
 
 # Convert a list of arrays to a list of app review dictionaries/objects
-def arrsToObjs(arrs):
+def arrs_to_objs(arrs):
     objs = []
 
     for arr in arrs:
@@ -55,15 +59,26 @@ def arrsToObjs(arrs):
         objs.append(obj)
     return objs
 
+
+def get_words(reviews):
+    all_words = []
+
+    for result in reviews:
+        all_words = all_words + result['original_review'].split()
+        # set limit at 10,000 words for performance reasons
+        if len(all_words) > 10000:
+            return all_words
+    return all_words
+
 # Resource containing all app data
 class AppRatings(Resource):
+
+
     def get(self):
         db_conn = get_db()
         c = db_conn.cursor()
         c.execute("SELECT DISTINCT product FROM REVIEW")
         db_results = c.fetchall()
-
-
 
         # Convert to objects with key-value pairs and return in results list
         results = []
@@ -80,16 +95,8 @@ class AppRatings(Resource):
         db_conn.close()
         return results
 
-# Resource containing app rating data for given app id
-def get_words(reviews):
-    all_words = []
 
-    for result in reviews:
-        all_words = all_words + result['original_review'].split()
-        #set limit at 10,000 words for performance reasons
-        if len(all_words) > 10000:
-            return all_words
-    return all_words;
+
 
 
 class AppRating(Resource):
@@ -101,41 +108,41 @@ class AppRating(Resource):
         verbosity = request.args.get('verbosity')
         metric = request.args.get('metric')
 
-        qryStr = "SELECT * FROM REVIEW WHERE product=? "
+        qry_str = "SELECT * FROM REVIEW WHERE product=? "
         subst_tuple = (app_id,)
         db_conn = get_db()
         c = db_conn.cursor()
 
         # Before anything else, must process ALL available reviews to derive verbosity scale
-        if (verbosity):
-            c.execute(qryStr, subst_tuple)
-            objs = arrsToObjs(c.fetchall())
+        if verbosity:
+            c.execute(qry_str, subst_tuple)
+            objs = arrs_to_objs(c.fetchall())
             # build histogram of ALL review word counts, regardless of other filtering parameters
             verbosity_agent.createHistogram(objs)
             # use built histogram to create verbosity scoring scale (ranges)
             verbosity_agent.createVerbosityScale()
 
-        if (start_date):
-           qryStr = qryStr + "AND date >= date(?) "
-           subst_tuple = subst_tuple + (start_date,)
+        if start_date:
+            qry_str += "AND date >= date(?) "
+            subst_tuple = subst_tuple + (start_date,)
 
-        if (end_date):
-           qryStr = qryStr + "AND date <= date(?)"
-           subst_tuple = subst_tuple + (end_date,)
+        if end_date:
+            qry_str += "AND date <= date(?)"
+            subst_tuple = subst_tuple + (end_date,)
 
-        if (min_rating):
-           qryStr = qryStr + "AND stars >= ? "
-           subst_tuple = subst_tuple + (min_rating,)
+        if min_rating:
+            qry_str += "AND stars >= ? "
+            subst_tuple = subst_tuple + (min_rating,)
 
-        if (max_rating):
-           qryStr = qryStr + "AND stars <= ? "
-           subst_tuple = subst_tuple + (max_rating,)
+        if max_rating:
+            qry_str += "AND stars <= ? "
+            subst_tuple = subst_tuple + (max_rating,)
 
-        c.execute(qryStr, subst_tuple)
+        c.execute(qry_str, subst_tuple)
         db_results = c.fetchall()
 
         # Convert array of arrays to dictionaries/objects with key-value pairs, and assign to 'reviews' key of results
-        results = {'reviews': arrsToObjs(db_results)}
+        results = {'reviews': arrs_to_objs(db_results)}
 
         # Now that results are filtered by other parameters, we can assign verbosity scores to results
         if verbosity:
@@ -144,7 +151,7 @@ class AppRating(Resource):
             verbosity_agent.assignVerbosityScores(results['reviews'])            # Assign the verbosity scores to results
 
             # Further filter results by given verbosity parameter
-            verbosObjs = [obj for obj in results['reviews'] if obj['verbosity'] == int(verbosity)]
+            verbose_objs = [obj for obj in results['reviews'] if obj['verbosity'] == int(verbosity)]
 
             verbosity_agent.reset()                                         # Reset verbosity agent before processing filtered results
             verbosity_agent.createHistogram(results['reviews'])                        # Create a new histogram using only filtered results
@@ -153,13 +160,12 @@ class AppRating(Resource):
             results['verbosity_scale'] = verbosity_scale                    # Include derived verbosity scale in results
             results['verbosity_hist'] = overall_verbosity_hist              # Include overall word count histogram
             results['verbosity_filtered_hist'] = filtered_verbosity_hist    # Include word count histogram for filtered results
-            results['reviews'] = verbosObjs                                 # Include app review objects with verbosity scores
+            results['reviews'] = verbose_objs                                 # Include app review objects with verbosity scores
         elif metric == 'wordcloud':
             all_words = get_words(results['reviews'])
             all_words = all_words
             uniq_words = set(all_words)
             word_count = []
-
             for word in uniq_words:
                 word_count.append([word, all_words.count(word)])
             results['word_count'] = word_count
@@ -174,5 +180,6 @@ api.add_resource(AppRatings, '/apps/')
 api.add_resource(AppRating, '/apps/<string:app_id>')
 
 # Check to see if acting as main application or module
+
 if __name__ == '__main__':
     app.run(debug=True) # Don't use debug in production environment
