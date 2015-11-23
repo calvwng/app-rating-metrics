@@ -1,6 +1,8 @@
 document.getElementById("myChart").style.width = "640";
 document.getElementById("myChart").style.height = "480";
 
+var myLineChart = null;
+
 function queryAPI() {
    var url = 'http://localhost:5000/apps/' + $("#apps").prop('value');
    var params = {};
@@ -120,9 +122,12 @@ function queryAPI() {
       };
 
       if (metric == 'wordcloud') {
+         if (myLineChart != null) {
+            myLineChart.destroy();
+         }
          WordCloud(document.getElementById('myChart'), {list: return_data.word_count, fontFamily: 'Times, serif'});
       } else {
-         var myLineChart = new Chart(ctx).Line(data, options);
+         myLineChart = new Chart(ctx).Line(data, options);
          document.getElementById("legend").innerHTML = myLineChart.generateLegend();
       }
 
