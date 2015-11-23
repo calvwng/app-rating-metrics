@@ -71,4 +71,4 @@ def getWinAvgs(reviews, metric, windowSize):
         #print 'Done with review', i
     return winAvgScores
 
-print getWinAvgs(test_scores, 'verbosity', 1)
+# print getWinAvgs(test_scores, 'verbosity', 1)

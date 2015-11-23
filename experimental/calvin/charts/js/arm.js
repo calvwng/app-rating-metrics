@@ -10,6 +10,7 @@ function queryAPI() {
    var start_date = $("#start_date").prop('value');
    var end_date = $("#end_date").prop('value');
 
+   /* Build the URL based on parameters present */
    if (start_date != "") {
       params["start_date"] = start_date;
    }
@@ -31,23 +32,24 @@ function queryAPI() {
       }
       numParams--;
    }
+   /* Done building URL */
 
-   // Query our API for
+   /* Query our API for original and selected metric windowed averages */
    $.get(url, function (return_data) {
+      var dates = [];
       var ratings = [];
       var metric = $("#metric").prop('value');
+      var dateToWinAvg = return_data['win_avg_stars'];
 
-      for (obj of return_data['reviews']) {
-         ratings.push(obj.stars);
+      for (date in dateToWinAvg) {
+         dates.push(date);
+         ratings.push(dateToWinAvg[date]);
       }
-
-      ratings = ratings.reverse(); // I think the results are returned newest to oldest
 
       // Get the context of the canvas element we want to select
       var ctx = document.getElementById("myChart").getContext("2d");
       var data = {
-         labels: ["Oct 02", "Oct 04", "Oct 06", "Oct 08", "Oct 10", "Oct 12",
-            "Oct 14", "Oct 16", "Oct 18", "Oct 20", "Oct 22"],
+         labels: dates,
          datasets: [
             {
                label: "Original Ratings",

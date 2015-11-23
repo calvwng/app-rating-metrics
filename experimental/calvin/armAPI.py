@@ -3,7 +3,7 @@ from flask_restful import Resource, Api
 
 import sqlite3
 import collections, copy
-import verbosity_agent
+import verbosity_agent, window_averager
 
 DATABASE = 'reviews.db'
 
@@ -109,13 +109,14 @@ class AppRating(Resource):
         metric = request.args.get('metric')
 
         qry_str = "SELECT * FROM REVIEW WHERE product=? "
+        ord_str = "ORDER BY date ASC "
         subst_tuple = (app_id,)
         db_conn = get_db()
         c = db_conn.cursor()
 
         # Before anything else, must process ALL available reviews to derive verbosity scale
         if verbosity:
-            c.execute(qry_str, subst_tuple)
+            c.execute(qry_str + ord_str, subst_tuple)
             objs = arrs_to_objs(c.fetchall())
             # build histogram of ALL review word counts, regardless of other filtering parameters
             verbosity_agent.createHistogram(objs)
@@ -127,7 +128,7 @@ class AppRating(Resource):
             subst_tuple = subst_tuple + (start_date,)
 
         if end_date:
-            qry_str += "AND date <= date(?)"
+            qry_str += "AND date <= date(?) "
             subst_tuple = subst_tuple + (end_date,)
 
         if min_rating:
@@ -138,7 +139,7 @@ class AppRating(Resource):
             qry_str += "AND stars <= ? "
             subst_tuple = subst_tuple + (max_rating,)
 
-        c.execute(qry_str, subst_tuple)
+        c.execute(qry_str + ord_str, subst_tuple)
         db_results = c.fetchall()
 
         # Convert array of arrays to dictionaries/objects with key-value pairs, and assign to 'reviews' key of results
@@ -171,6 +172,7 @@ class AppRating(Resource):
             results['word_count'] = word_count
 
         results['product_name'] = PID_TO_NAME[app_id]                       # Always include the product name
+        results['win_avg_stars'] = window_averager.getWinAvgs(results['reviews'], 'stars', 0) # Windowed averages of original ratings
 
         db_conn.close()
         return results
