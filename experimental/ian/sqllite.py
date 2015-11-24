@@ -32,31 +32,25 @@ def get_column_names (cursor, table_name):
     c2 = cursor.execute("select * from " + table_name)
     return [d[0] for d in c2.description]
 
-with open('query.json') as data_file:
-  data = json.load(data_file)
-
-
 
 print "Adding words:"
 
 conn.commit()
 
-appId = '14831371782'
-app = 'Textra SMS'
+apps = [['14831371782', 'Textra SMS']]
 
-c.execute("INSERT INTO APP(id, name) VALUES(?,?)",(appId, app))
+for app in apps:
+    c.execute("INSERT INTO APP(id, name) VALUES(?,?)", app)
 with open('words.json') as word_file:
     for line in json.load(word_file):
-        print "\t" + line['word']
         c.execute("INSERT INTO KEYWORD(word, weight) VALUES (?,?)",
                   (line['word'], line['weight']))
 
 print "Adding reviews:"
 columns = get_column_names(c, "review")
-with open ('allTextraReviews.json') as word_file:
+with open('allTextraReviews.json') as word_file:
     for line in json.load(word_file):
-        print "\t" + line['id']
-    c.execute("INSERT INTO REVIEW(id, product, author, stars, version) VALUES (?,?,?,?,?)",
+        c.execute("INSERT INTO REVIEW(id, product_id, author, stars, version) VALUES (?,?,?,?,?)",
               (line['id'], line['product'], line['author'], line['stars'], line['version']))
 conn.commit()
 
