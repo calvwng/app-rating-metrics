@@ -67,7 +67,7 @@ def get_win_avgs(reviews, metric, window_size):
 
         print window_avg, "/", total_scores, "scores in datetime window"
         print "Window's avg:", float(window_avg) / total_scores
-        win_avg_scores[as_date_only_str(cur_date)] = (window_avg) / total_scores
+        win_avg_scores[as_date_only_str(cur_date)] = float(window_avg) / total_scores
         #print 'Done with review', i
     return win_avg_scores
 
