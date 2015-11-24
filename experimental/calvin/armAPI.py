@@ -64,7 +64,7 @@ def get_words(reviews):
     all_words = []
 
     for result in reviews:
-        all_words = all_words + result['original_review'].split()
+        all_words += result['original_review'].split()
         # set limit at 10,000 words for performance reasons
         if len(all_words) > 10000:
             return all_words
@@ -110,7 +110,7 @@ class AppRating(Resource):
 
         qry_str = "SELECT * FROM REVIEW WHERE product=? "
         ord_str = "ORDER BY date ASC "
-        subst_tuple = (app_id,)
+        subst_tuple = [app_id]
         db_conn = get_db()
         c = db_conn.cursor()
 
@@ -125,19 +125,19 @@ class AppRating(Resource):
 
         if start_date:
             qry_str += "AND date >= date(?) "
-            subst_tuple = subst_tuple + (start_date,)
+            subst_tuple.append(start_date)
 
         if end_date:
             qry_str += "AND date <= date(?) "
-            subst_tuple = subst_tuple + (end_date,)
+            subst_tuple.append(end_date)
 
         if min_rating:
             qry_str += "AND stars >= ? "
-            subst_tuple = subst_tuple + (min_rating,)
+            subst_tuple.append(min_rating)
 
         if max_rating:
             qry_str += "AND stars <= ? "
-            subst_tuple = subst_tuple + (max_rating,)
+            subst_tuple.append(max_rating)
 
         c.execute(qry_str + ord_str, subst_tuple)
         db_results = c.fetchall()
@@ -172,7 +172,7 @@ class AppRating(Resource):
             results['word_count'] = word_count
 
         results['product_name'] = PID_TO_NAME[app_id]                       # Always include the product name
-        results['win_avg_stars'] = window_averager.getWinAvgs(results['reviews'], 'stars', 0) # Windowed averages of original ratings
+        results['win_avg_stars'] = window_averager.get_win_avgs(results['reviews'], 'stars', 0) # Windowed averages of original ratings
 
         db_conn.close()
         return results
