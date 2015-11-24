@@ -42,23 +42,16 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
     return response
 
-
-# Convert a list of arrays to a list of app review dictionaries/objects
-def arrs_to_objs(arrs):
-    objs = []
-
-    for arr in arrs:
-        obj = collections.OrderedDict()
-        obj['id'] = arr[0]
-        obj['product'] = arr[1]
-        obj['original_review'] = arr[2]
-        obj['date'] = arr[3]
-        obj['author'] = arr[4]
-        obj['stars'] = arr[5]
-        obj['version'] = arr[6]
-        objs.append(obj)
-    return objs
-
+def arr_to_obj (arr):
+    obj = collections.OrderedDict()
+    obj['id'] = arr[0]
+    obj['product'] = arr[1]
+    obj['original_review'] = arr[2]
+    obj['date'] = arr[3]
+    obj['author'] = arr[4]
+    obj['stars'] = arr[5]
+    obj['version'] = arr[6]
+    return obj
 
 def get_words(reviews):
     all_words = []
@@ -117,7 +110,7 @@ class AppRating(Resource):
         # Before anything else, must process ALL available reviews to derive verbosity scale
         if verbosity:
             c.execute(qry_str + ord_str, subst_tuple)
-            objs = arrs_to_objs(c.fetchall())
+            objs = map(arr_to_obj, c.fetchall())
             # build histogram of ALL review word counts, regardless of other filtering parameters
             verbosity_agent.createHistogram(objs)
             # use built histogram to create verbosity scoring scale (ranges)
@@ -143,7 +136,7 @@ class AppRating(Resource):
         db_results = c.fetchall()
 
         # Convert array of arrays to dictionaries/objects with key-value pairs, and assign to 'reviews' key of results
-        results = {'reviews': arrs_to_objs(db_results)}
+        results = {'reviews': map(arr_to_obj, db_results)}
 
         # Now that results are filtered by other parameters, we can assign verbosity scores to results
         if verbosity:

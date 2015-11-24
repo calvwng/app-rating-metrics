@@ -16,7 +16,7 @@ def as_date_only_str(date):
 # For each distinct date, find average <metric> score
 # within |windowSize| days of the date.
 # Returns a list of {'date': ..., 'avg_<metric>': ...} objects
-def get_win_avgs(reviews, metric, windowSize):
+def get_win_avgs(reviews, metric, window_size):
     win_avg_scores = collections.OrderedDict()
     next_key_date = None
 
@@ -30,8 +30,8 @@ def get_win_avgs(reviews, metric, windowSize):
             continue
 
         print "\nWindow center:", as_date_only_str(cur_date)
-        min_date = cur_date - datetime.timedelta(days=windowSize)
-        max_date = cur_date + datetime.timedelta(days=windowSize)
+        min_date = cur_date - datetime.timedelta(days=window_size)
+        max_date = cur_date + datetime.timedelta(days=window_size)
         next_key_date = max_date + datetime.timedelta(days=1) # Want next date past the window for next avg
 
         window_avg = 0
