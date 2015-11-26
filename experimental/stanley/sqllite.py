@@ -3,8 +3,6 @@ import json
 
 __author__ = 'Ian'
 
-
-
 def is_number(s):
     try:
         float(s)
@@ -30,7 +28,7 @@ def sentiment_score(s, negation_words, conn_cursor):
            possible_negations.pop(0)
         multiplier = 1
         temp_score = 0
-        for word_score in conn_cursor.execute("SELECT weight FROM KEYWORD WHERE word='{0}'".format(word.lower().replace("'", "''"))):
+        for word_score in conn_cursor.execute("SELECT weight FROM KEYWORD WHERE word='{0}'".format(word.encode('utf-8').lower().replace("'", "''"))):
             temp_score = word_score[0]
             print "this is the word: " + word
         if temp_score != 0:
@@ -64,11 +62,6 @@ def get_column_names (cursor, table_name):
     c2 = cursor.execute("select * from " + table_name)
     return [d[0] for d in c2.description]
 
-with open('query.json') as data_file:
-  data = json.load(data_file)
-
-
-
 print "Adding words:"
 
 conn.commit()
@@ -82,8 +75,9 @@ with open('vader_sentiment_lexicon.txt') as word_file:
 
 print "Adding reviews:"
 columns = get_column_names(c, "review")
-with open ('allTextraReviews.json') as word_file:
+with open ('snapchatReviews.json') as word_file:
     for line in json.load(word_file):
+        print line['id']
         c.execute("INSERT INTO REVIEW(id, product, original_review, date, author, stars, version) VALUES (?,?,?,?,?,?,?)", (line['id'], line['product'], line['original_review'], line['date'], line['author'], line['stars'], line['version']))
 conn.commit()
 

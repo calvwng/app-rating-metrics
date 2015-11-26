@@ -1,4 +1,5 @@
 INSERT PRODUCT IDS HERE
 
 google play:
+    snapchat - 213940691
     textra - 14831371782
