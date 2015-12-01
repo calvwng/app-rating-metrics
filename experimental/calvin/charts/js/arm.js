@@ -71,7 +71,7 @@ function queryAPI() {
          labels: dates,
          datasets: [
             {
-               label: "Original Ratings",
+               label: "GREY = Original Average Ratings",
                fillColor: "rgba(220,220,220,0.2)",
                strokeColor: "rgba(220,220,220,1)",
                pointColor: "rgba(220,220,220,1)",
@@ -81,7 +81,7 @@ function queryAPI() {
                data: ratings
             },
             {
-               label: "[METRIC] Rating",
+               label: "BLUE = Metric (" + metric + ") Average Rating",
                fillColor: "rgba(151,187,205,0.2)",
                strokeColor: "rgba(151,187,205,1)",
                pointColor: "rgba(151,187,205,1)",
@@ -162,6 +162,7 @@ function queryAPI() {
       if (window.reviews.length > 0) {
           var review = window.reviews[0];
           $('#rev_author').html(review['author']);
+          $('#rev_date').html(review['date']);
           $('#rev_text').html(review['original_review']);
           $('#rev_stars').html(review['stars']);
           $('#rev_metric').html('Metric (' + metric + ') score: ');
@@ -183,6 +184,7 @@ $('#prevRev').click(function() {
    if (window.curReview > 0) {
       var review = window.reviews[--window.curReview];
       $('#rev_author').html(review['author']);
+      $('#rev_date').html(review['date']);
       $('#rev_text').html(review['original_review']);
       $('#rev_stars').html(review['stars']);
       $('#rev_metric').html('Metric (' + metric + ') score: ');
@@ -198,6 +200,7 @@ $('#nextRev').click(function() {
    if (window.curReview < window.reviews.length - 1) {
       var review = window.reviews[++window.curReview];
       $('#rev_author').html(review['author']);
+      $('#rev_date').html(review['date']);
       $('#rev_text').html(review['original_review']);
       $('#rev_stars').html(review['stars']);
       $('#rev_metric').html('Metric (' + metric + ') score: ');
