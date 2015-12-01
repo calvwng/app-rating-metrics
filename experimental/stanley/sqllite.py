@@ -1,19 +1,10 @@
 import sqlite3
 import json
-import enchant
 import sentiment_scoring
 import spelling_scoring
 
 __author__ = 'Ian'
 
-def is_number(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False
-
-dict = enchant.Dict()
 conn = sqlite3.connect(':memory:')
 c = conn.cursor()
 
@@ -36,15 +27,6 @@ c.execute('''CREATE TABLE IF NOT EXISTS REVIEWXKEYWORD
 
 conn.commit()
 
-# Populating sentiment analysis dictionary from file
-
-sent_dict = {}
-with open('vader_sentiment_lexicon.txt') as word_file:
-    for line in word_file:
-        word_weight = line.split()
-        if is_number(word_weight[1]):
-            sent_dict[word_weight[0]] = float(word_weight[1])
-
 print "Adding reviews:"
 with open ('snapchatReviews.json') as word_file:
     for line in json.load(word_file):
@@ -52,12 +34,11 @@ with open ('snapchatReviews.json') as word_file:
 conn.commit()
 
 # gets reviews and assigns scores
-negation_words = open('negationWords.txt').read().splitlines()
 for row in c.execute("SELECT original_review FROM REVIEW"):
     print
     print "this is a review: " + row[0]
-    print "this is the sentiment score from range -5 to 5: " + str(sentiment_scoring.sentiment_score(row[0], negation_words, sent_dict))
-    print "this is the spelling score from range 0 to 5: " + str(spelling_scoring.spelling_score(row[0], dict))
+    print "this is the sentiment score from range -5 to 5: " + str(sentiment_scoring.sentiment_score(row[0]))
+    print "this is the spelling score from range 0 to 5: " + str(spelling_scoring.spelling_score(row[0]))
 
 # We can also close the connection if we are done with it.
 # Just be sure any changes have been committed or they will be lost.

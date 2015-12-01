@@ -1,4 +1,8 @@
-def spelling_score(s, dict):
+import enchant
+
+dict = enchant.Dict()
+
+def spelling_score(s):
     correct = 0
     incorrect = 0
     for word in s.split():
