@@ -62,7 +62,7 @@ def spelling_score(s, dict):
             return 4
 
 dict = enchant.Dict()
-conn = sqlite3.connect(':memory:')
+conn = sqlite3.connect('snapchat_reviews.db')
 c = conn.cursor()
 
 creation_sql = ['''CREATE TABLE IF NOT EXISTS APP (id INTEGER PRIMARY KEY AUTOINCREMENT, name text, developer text,
