@@ -1,0 +1,22 @@
+def spelling_score(s, dict):
+    correct = 0
+    incorrect = 0
+    for word in s.split():
+        if dict.check(word):
+            correct += 1
+        else:
+            incorrect += 1
+    if incorrect == 0:
+        return 5
+    else:
+        incorr_percent = incorrect / float(correct + incorrect)
+        if incorr_percent > 0.3:
+            return 0
+        elif incorr_percent > 0.2:
+            return 1
+        elif incorr_percent > 0.1:
+            return 2
+        elif incorr_percent > 0.05:
+            return 3
+        else:
+            return 4
