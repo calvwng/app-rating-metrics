@@ -7,6 +7,8 @@ function queryAPI() {
    var url = 'http://localhost:5000/apps/' + $("#apps").prop('value');
    var params = {};
    var metric = $("#metric").prop('value');
+   var min_metric_val = $("#min_metric_val").prop('value');
+   var max_metric_val = $("#max_metric_val").prop('value');
    var start_date = $("#start_date").prop('value');
    var end_date = $("#end_date").prop('value');
 
@@ -17,6 +19,14 @@ function queryAPI() {
 
    if (end_date != "") {
       params["end_date"] = end_date;
+   }
+
+   if (min_metric_val != "") {
+      params['min_' + metric] = min_metric_val;
+   }
+
+   if (max_metric_val != "") {
+      params['max_' + metric] = max_metric_val;
    }
    params["metric"] = metric;
 
@@ -36,14 +46,23 @@ function queryAPI() {
 
    /* Query our API for original and selected metric windowed averages */
    $.get(url, function (return_data) {
+      var metric = $("#metric").prop('value');
       var dates = [];
       var ratings = [];
-      var metric = $("#metric").prop('value');
       var dateToWinAvg = return_data['win_avg_stars'];
+
+      var ratingsMetric = [];
+      var dateToWinAvgMetric = return_data['win_avg_' + metric];
+
+      $('#loading_icon').css('visibility', 'hidden'); // Hide loading indicator b/c got data back
 
       for (date in dateToWinAvg) {
          dates.push(date);
          ratings.push(dateToWinAvg[date]);
+      }
+
+      for (date in dateToWinAvgMetric) {
+         ratingsMetric.push(dateToWinAvgMetric[date]);
       }
 
       // Get the context of the canvas element we want to select
@@ -69,7 +88,7 @@ function queryAPI() {
                pointStrokeColor: "#fff",
                pointHighlightFill: "#fff",
                pointHighlightStroke: "rgba(151,187,205,1)",
-               data: [1, 2, 3, 3.5, 4, 4.5, 4, 1, 3, 4, 4.2, 4] // XXX: Dummy data
+               data: ratingsMetric
             }
          ]
       };
@@ -138,7 +157,10 @@ function queryAPI() {
 
 
 
-$("#submitBtn").click(queryAPI);
+$("#submitBtn").click(function() {
+   queryAPI();
+   $('#loading_icon').css('visibility', 'visible');
+});
 
 $(document).ready(function () {
    $.get('http://localhost:5000/apps', function (data) {

@@ -27,21 +27,29 @@
             <select id="metric">
                <option value="sentiment">Level of Sentiment</option>
                <option value="verbosity">Verbosity</option>
+               <option value="spellcheck">Spellcheck</option>
                <option value="wordcloud">Word Cloud</option>
                <option value="none">None</option>
             </select>
          </span></br>
 
          <span>
+            <b>Min metric value: </b>
+            <input id="min_metric_val" type="text" name="min_metric_val" placeholder="Minimum value" value="0" />
+            <b>Max metric value: </b>
+            <input id="max_metric_val" type="text" name="max_metric_val" placeholder="Maximum value" value="5" />
+         </span><br/>
+
+         <span>
             <b>Start date: </b>
             <input id="start_date" type="text" name="start_date" placeholder="YYYY-MM-DD" value="2015-01-01" />
             <b>End date: </b>
             <input id="end_date" type="text" name="end_date" placeholder="YYYY-MM-DD" value="2015-12-31" />
-            <button id="submitBtn" class="btn">Submit</button>
+            <button id="submitBtn" class="btn"><span id="loading_icon" class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>Submit</button>
          </span>
 
          <div id="chartContainer">
-            <canvas id="myChart" width="400" height="400"></canvas>
+       te"> <canvas id="myChart" width="400" height="400"></canvas>
             <div id="legend"></div>
 
             <script src="js/Chart.js"></script>

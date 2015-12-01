@@ -143,6 +143,20 @@ class AppRating(Resource):
         # Convert array of arrays to dictionaries/objects with key-value pairs, and assign to 'reviews' key of results
         results = {'reviews': map(arr_to_obj, db_results)}
 
+        # Wordcloud is only used on front-end to trigger display of a wordcloud. It prevents other metric parameters from being used.
+        if metric == 'wordcloud':
+            all_words = get_words(results['reviews'])
+            all_words = all_words
+            uniq_words = set(all_words)
+            word_count = []
+            for word in uniq_words:
+                word_count.append([word, all_words.count(word)])
+            results['word_count'] = word_count
+            # Always include the below
+            results['product_name'] = PID_TO_NAME[app_id]                       # Always include the product name
+            results['win_avg_stars'] = window_averager.get_win_avgs(results['reviews'], 'stars', 0) # Windowed averages of original ratings
+            return results # No other parameters besides date range are used
+
         # Now that results are filtered by other parameters, we can assign verbosity scores to results
         if min_verbosity or max_verbosity:
             overall_verbosity_hist = copy.deepcopy(verbosity_agent.histogramlst) # Save deep copy of overall word count histogram
@@ -167,15 +181,6 @@ class AppRating(Resource):
             results['verbosity_filtered_hist'] = filtered_verbosity_hist    # Include word count histogram for filtered results
             results['reviews'] = verbose_objs                                 # Include app review objects with verbosity scores
             results['win_avg_verbosity'] = window_averager.get_win_avgs(results['reviews'], 'verbosity', 0) # Windowed averages of verbosity ratings
-
-        if metric == 'wordcloud':
-            all_words = get_words(results['reviews'])
-            all_words = all_words
-            uniq_words = set(all_words)
-            word_count = []
-            for word in uniq_words:
-                word_count.append([word, all_words.count(word)])
-            results['word_count'] = word_count
 
         if min_sentiment or max_sentiment:
             sentiment_scoring.assignSentimentScores(results['reviews'])  # Assign the verbosity scores to results
