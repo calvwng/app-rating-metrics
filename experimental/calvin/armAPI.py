@@ -3,7 +3,7 @@ from flask_restful import Resource, Api
 
 import sqlite3
 import collections, copy
-import verbosity_agent, window_averager
+import verbosity_agent, window_averager, sentiment_scoring, spelling_scoring
 
 DATABASE = 'snapchat_reviews.db'
 
@@ -100,6 +100,8 @@ class AppRating(Resource):
         max_rating = request.args.get('max_rating')
         min_verbosity = request.args.get('min_verbosity')
         max_verbosity = request.args.get('max_verbosity')
+        min_sentiment = request.args.get('min_sentiment')
+        max_sentiment = request.args.get('max_sentiment')
         metric = request.args.get('metric')
 
         qry_str = "SELECT * FROM REVIEW WHERE product=? "
@@ -162,7 +164,8 @@ class AppRating(Resource):
             results['verbosity_hist'] = overall_verbosity_hist              # Include overall word count histogram
             results['verbosity_filtered_hist'] = filtered_verbosity_hist    # Include word count histogram for filtered results
             results['reviews'] = verbose_objs                                 # Include app review objects with verbosity scores
-        elif metric == 'wordcloud':
+
+        if metric == 'wordcloud':
             all_words = get_words(results['reviews'])
             all_words = all_words
             uniq_words = set(all_words)
@@ -171,6 +174,21 @@ class AppRating(Resource):
                 word_count.append([word, all_words.count(word)])
             results['word_count'] = word_count
 
+        if min_sentiment or max_sentiment:
+            sentiment_scoring.assignSentimentScores(results['reviews'])  # Assign the verbosity scores to results
+            sentiment_objs = []
+
+            # Further filter results by given verbosity parameter
+            if min_sentiment and max_sentiment == None:
+                sentiment_objs += [obj for obj in results['reviews'] if obj['sentiment'] >= int(min_sentiment)]
+            elif min_sentiment and max_sentiment == None:
+                sentiment_objs += [obj for obj in results['reviews'] if obj['sentiment'] <= int(max_sentiment)]
+            elif min_sentiment and max_sentiment:
+                sentiment_objs += [obj for obj in results['reviews'] if obj['sentiment'] >= int(min_sentiment) and obj['sentiment'] <= int(max_sentiment)]
+
+            results['reviews'] = sentiment_objs                                 # Include app review objects with sentiment scores
+
+        # Always include the below
         results['product_name'] = PID_TO_NAME[app_id]                       # Always include the product name
         results['win_avg_stars'] = window_averager.get_win_avgs(results['reviews'], 'stars', 0) # Windowed averages of original ratings
 
