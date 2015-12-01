@@ -166,6 +166,7 @@ class AppRating(Resource):
             results['verbosity_hist'] = overall_verbosity_hist              # Include overall word count histogram
             results['verbosity_filtered_hist'] = filtered_verbosity_hist    # Include word count histogram for filtered results
             results['reviews'] = verbose_objs                                 # Include app review objects with verbosity scores
+            results['win_avg_verbosity'] = window_averager.get_win_avgs(results['reviews'], 'verbosity', 0) # Windowed averages of verbosity ratings
 
         if metric == 'wordcloud':
             all_words = get_words(results['reviews'])
@@ -189,6 +190,7 @@ class AppRating(Resource):
                 sentiment_objs += [obj for obj in results['reviews'] if obj['sentiment'] >= int(min_sentiment) and obj['sentiment'] <= int(max_sentiment)]
 
             results['reviews'] = sentiment_objs                                 # Include app review objects with sentiment scores
+            results['win_avg_sentiment'] = window_averager.get_win_avgs(results['reviews'], 'sentiment', 0) # Windowed averages of sentiment ratings
 
         if min_spellcheck or max_spellcheck:
             spelling_scoring.assignSpellcheckScores(results['reviews'])  # Assign the verbosity scores to results
@@ -203,6 +205,7 @@ class AppRating(Resource):
                 spellcheck_objs += [obj for obj in results['reviews'] if obj['spellcheck'] >= int(min_spellcheck) and obj['spellcheck'] <= int(max_spellcheck)]
 
             results['reviews'] = spellcheck_objs                                 # Include app review objects with sentiment scores
+            results['win_avg_spellcheck'] = window_averager.get_win_avgs(results['reviews'], 'spellcheck', 0) # Windowed averages of spellcheck ratings
 
         # Always include the below
         results['product_name'] = PID_TO_NAME[app_id]                       # Always include the product name
