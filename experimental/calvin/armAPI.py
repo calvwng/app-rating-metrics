@@ -102,6 +102,8 @@ class AppRating(Resource):
         max_verbosity = request.args.get('max_verbosity')
         min_sentiment = request.args.get('min_sentiment')
         max_sentiment = request.args.get('max_sentiment')
+        min_spellcheck = request.args.get('min_spellcheck')
+        max_spellcheck = request.args.get('max_spellcheck')
         metric = request.args.get('metric')
 
         qry_str = "SELECT * FROM REVIEW WHERE product=? "
@@ -187,6 +189,20 @@ class AppRating(Resource):
                 sentiment_objs += [obj for obj in results['reviews'] if obj['sentiment'] >= int(min_sentiment) and obj['sentiment'] <= int(max_sentiment)]
 
             results['reviews'] = sentiment_objs                                 # Include app review objects with sentiment scores
+
+        if min_spellcheck or max_spellcheck:
+            spelling_scoring.assignSpellcheckScores(results['reviews'])  # Assign the verbosity scores to results
+            spellcheck_objs = []
+
+            # Further filter results by given verbosity parameter
+            if min_spellcheck and max_spellcheck == None:
+                spellcheck_objs += [obj for obj in results['reviews'] if obj['spellcheck'] >= int(min_spellcheck)]
+            elif min_spellcheck and max_spellcheck == None:
+                spellcheck_objs += [obj for obj in results['reviews'] if obj['spellcheck'] <= int(max_spellcheck)]
+            elif min_spellcheck and max_spellcheck:
+                spellcheck_objs += [obj for obj in results['reviews'] if obj['spellcheck'] >= int(min_spellcheck) and obj['spellcheck'] <= int(max_spellcheck)]
+
+            results['reviews'] = spellcheck_objs                                 # Include app review objects with sentiment scores
 
         # Always include the below
         results['product_name'] = PID_TO_NAME[app_id]                       # Always include the product name

@@ -24,3 +24,7 @@ def spelling_score(s):
             return 3
         else:
             return 4
+
+def assignSpellcheckScores(objList):
+   for obj in objList:
+       obj['spellcheck'] = spelling_score(obj['original_review'])
