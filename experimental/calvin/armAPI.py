@@ -98,7 +98,8 @@ class AppRating(Resource):
         end_date = request.args.get('end_date')
         min_rating = request.args.get('min_rating')
         max_rating = request.args.get('max_rating')
-        verbosity = request.args.get('verbosity')
+        min_verbosity = request.args.get('min_verbosity')
+        max_verbosity = request.args.get('max_verbosity')
         metric = request.args.get('metric')
 
         qry_str = "SELECT * FROM REVIEW WHERE product=? "
@@ -108,7 +109,7 @@ class AppRating(Resource):
         c = db_conn.cursor()
 
         # Before anything else, must process ALL available reviews to derive verbosity scale
-        if verbosity:
+        if min_verbosity or max_verbosity:
             c.execute(qry_str + ord_str, subst_tuple)
             objs = map(arr_to_obj, c.fetchall())
             # build histogram of ALL review word counts, regardless of other filtering parameters
@@ -139,13 +140,19 @@ class AppRating(Resource):
         results = {'reviews': map(arr_to_obj, db_results)}
 
         # Now that results are filtered by other parameters, we can assign verbosity scores to results
-        if verbosity:
+        if min_verbosity or max_verbosity:
             overall_verbosity_hist = copy.deepcopy(verbosity_agent.histogramlst) # Save deep copy of overall word count histogram
             verbosity_scale = copy.deepcopy(verbosity_agent.verbosityscoreslst)  # Save deep copy of overall verbosity scale
             verbosity_agent.assignVerbosityScores(results['reviews'])            # Assign the verbosity scores to results
+            verbose_objs = []
 
             # Further filter results by given verbosity parameter
-            verbose_objs = [obj for obj in results['reviews'] if obj['verbosity'] == int(verbosity)]
+            if min_verbosity and max_verbosity == None:
+                verbose_objs += [obj for obj in results['reviews'] if obj['verbosity'] >= int(min_verbosity)]
+            elif max_verbosity and min_verbosity == None:
+                verbose_objs += [obj for obj in results['reviews'] if obj['verbosity'] <= int(max_verbosity)]
+            elif min_verbosity and max_verbosity:
+                verbose_objs += [obj for obj in results['reviews'] if obj['verbosity'] >= int(min_verbosity) and obj['verbosity'] <= int(max_verbosity)]
 
             verbosity_agent.reset()                                         # Reset verbosity agent before processing filtered results
             verbosity_agent.createHistogram(results['reviews'])                        # Create a new histogram using only filtered results
