@@ -152,6 +152,21 @@ function queryAPI() {
          document.getElementById("legend").innerHTML = myLineChart.generateLegend();
       }
 
+      // Display first matched review
+      window.reviews = return_data['reviews'];
+      window.curReview = 0;
+
+      $('#numRev').html(window.reviews.length);
+      $('#curRev').html(window.curReview);
+
+      if (window.reviews.length > 0) {
+          var review = window.reviews[0];
+          $('#rev_author').html(review['author']);
+          $('#rev_text').html(review['original_review']);
+          $('#rev_stars').html(review['stars']);
+          $('#rev_metric').html('Metric (' + metric + ') score: ');
+          $('#rev_metric_score').html(review[metric]);
+      }
    });
 }
 
@@ -161,6 +176,37 @@ $("#submitBtn").click(function() {
    queryAPI();
    $('#loading_icon').css('visibility', 'visible');
 });
+
+$('#prevRev').click(function() {
+   var metric = $("#metric").prop('value');
+
+   if (window.curReview > 0) {
+      var review = window.reviews[--window.curReview];
+      $('#rev_author').html(review['author']);
+      $('#rev_text').html(review['original_review']);
+      $('#rev_stars').html(review['stars']);
+      $('#rev_metric').html('Metric (' + metric + ') score: ');
+      $('#rev_metric_score').html(review[metric]);
+
+      $('#curRev').html(window.curReview);
+   }
+});
+
+$('#nextRev').click(function() {
+   var metric = $("#metric").prop('value');
+
+   if (window.curReview < window.reviews.length - 1) {
+      var review = window.reviews[++window.curReview];
+      $('#rev_author').html(review['author']);
+      $('#rev_text').html(review['original_review']);
+      $('#rev_stars').html(review['stars']);
+      $('#rev_metric').html('Metric (' + metric + ') score: ');
+      $('#rev_metric_score').html(review[metric]);
+
+      $('#curRev').html(window.curReview);
+   }
+});
+
 
 $(document).ready(function () {
    $.get('http://localhost:5000/apps', function (data) {

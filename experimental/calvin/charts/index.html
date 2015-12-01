@@ -15,48 +15,73 @@
       <div id="container">
          <h1>Metric-Based App Rating System Prototype</h1>
 
-         <span>
-            <b>App to analyze: </b>
-            <select id="apps">
+         <div>
+            <span>
+               <b>App to analyze: </b>
+               <select id="apps">
 
-            </select>
-         </span></br>
+               </select>
+            </span></br>
 
-         <span>
-            <b>Metric to use: </b>
-            <select id="metric">
-               <option value="sentiment">Level of Sentiment</option>
-               <option value="verbosity">Verbosity</option>
-               <option value="spellcheck">Spellcheck</option>
-               <option value="wordcloud">Word Cloud</option>
-               <option value="none">None</option>
-            </select>
-         </span></br>
+            <span>
+               <b>Metric to use: </b>
+               <select id="metric">
+                  <option value="sentiment">Level of Sentiment</option>
+                  <option value="verbosity">Verbosity</option>
+                  <option value="spellcheck">Spellcheck</option>
+                  <option value="wordcloud">Word Cloud</option>
+                  <option value="none">None</option>
+               </select>
+            </span></br>
 
-         <span>
-            <b>Min metric value: </b>
-            <input id="min_metric_val" type="text" name="min_metric_val" placeholder="Minimum value" value="0" />
-            <b>Max metric value: </b>
-            <input id="max_metric_val" type="text" name="max_metric_val" placeholder="Maximum value" value="5" />
-         </span><br/>
 
-         <span>
-            <b>Start date: </b>
-            <input id="start_date" type="text" name="start_date" placeholder="YYYY-MM-DD" value="2015-01-01" />
-            <b>End date: </b>
-            <input id="end_date" type="text" name="end_date" placeholder="YYYY-MM-DD" value="2015-12-31" />
-            <button id="submitBtn" class="btn"><span id="loading_icon" class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>Submit</button>
-         </span>
+            <span>
+               <b>Min metric value: </b>
+               <input id="min_metric_val" type="text" name="min_metric_val" placeholder="Minimum value" value="0" />
+               <b>Max metric value: </b>
+               <input id="max_metric_val" type="text" name="max_metric_val" placeholder="Maximum value" value="5" />
+            </span><br/>
 
-         <div id="chartContainer">
-       te"> <canvas id="myChart" width="400" height="400"></canvas>
-            <div id="legend"></div>
-
-            <script src="js/Chart.js"></script>
-            <script src="js/arm.js"></script>
-            <script src="js/wordcloud2.js"></script>
+            <span>
+               <b>Start date: </b>
+               <input id="start_date" type="text" name="start_date" placeholder="YYYY-MM-DD" value="2015-01-01" />
+               <b>End date: </b>
+               <input id="end_date" type="text" name="end_date" placeholder="YYYY-MM-DD" value="2015-12-31" />
+               <button id="submitBtn" class="btn"><span id="loading_icon" class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>Submit</button>
+            </span><br/>
          </div>
+
+         <table>
+            <tr>
+               <td>
+                  <div id="chartContainer">
+                     <canvas id="myChart" width="400" height="400"></canvas>
+                     <div id="legend"></div>
+                  </div>
+               </td>
+               <td>
+                  <div id="reviewContainer">
+                     <span>Review <b id="curRev">CURRENT</b> of <b id="numRev">TOTAL</b></span>
+                     <span>
+                        <button id="prevRev" class="btn">Previous</button>
+                        <button id="nextRev" class="btn">Next</button>
+                     </span>
+
+                     <ul style="list-style-type:none">
+                        <li><b>Author:</b> <span id="rev_author"></span></li>
+                        <li><b>Review:</b>  <span id="rev_text"></span></li>
+                        <li><b>Stars:</b>  <span id="rev_stars"></span></li>
+                        <li><b id="rev_metric">Metric score:</b>  <span id="rev_metric_score"></span></li>
+                     </ul>
+                  </div>
+               </td>
+            </tr>
+         </table>
       </div>
+
+      <script src="js/Chart.js"></script>
+      <script src="js/arm.js"></script>
+      <script src="js/wordcloud2.js"></script>
    </body>
 
 </html>
