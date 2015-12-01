@@ -5,11 +5,11 @@ import sqlite3
 import collections, copy
 import verbosity_agent, window_averager
 
-DATABASE = 'reviews.db'
+DATABASE = 'snapchat_reviews.db'
 
 # Product ID -> name mapping
 PID_TO_NAME = {
-    "14831371782": "Textra SMS"
+    "213940691": "Snapchat"
 }
 
 
