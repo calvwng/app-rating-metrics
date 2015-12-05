@@ -11,6 +11,18 @@ Our project goal was to create an alternative rating system for Android applicat
 
 These new ratings could help the user better understand how an app’s rating may differ (especially over time or in relation to the original rating) when focusing on specific metrics such as verbosity (review length), sentiment, spelling accuracy, and word frequency. We plan to visualize the ratings derived from these metrics with the original ratings on the same line graph over time. This will help users see historical trends of both original average ratings and average ratings based on specified metrics.
 
+<b>Existing, original ratings on Google Play store:</b>
+
+![](https://github.com/calvwng/app-rating-metrics/blob/master/demo_images/example_ratings.png)
+
+<b>Example of historical sentiment trends vs original rating trends derived by our system:</b>
+
+![](https://github.com/calvwng/app-rating-metrics/blob/master/demo_images/sentiment_chart.png)
+
+<b>Example of word frequency trends displayed by our system using the wordcloud2 library:</b>
+
+![](https://github.com/calvwng/app-rating-metrics/blob/master/demo_images/wordcloud_chart.png)
+
 ## Features and Requirements
 
 The following is an overview of the features and corresponding requirements that we fulfilled through the completion of our project:
